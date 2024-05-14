@@ -1,12 +1,16 @@
 variable "ENVIRONMENT" {
+    default = "dev"
+
 
 }
 
 variable "REGION"{
-description = "my region"
+    default = "us-east-1"
+
 }
 
 variable "INSTANCE_TYPE"{
-    description = "my instance_type"
+    default = "t2.micro"
+    
 
 }
