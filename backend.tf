@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket         = "veves3"
-    key            = "week10/terraform.tfstate"
+    bucket         = "new-statefile"
+    key            = "w10/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     use_lockfile = false
