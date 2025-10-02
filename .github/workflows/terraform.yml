@@ -52,32 +52,41 @@ jobs:
     - name: Terraform validate
       run: terraform validate
 
-    - name: Run tfsec
-      uses: aquasecurity/tfsec-action@v1.0.0
-      with:
-        args: .
+  terrascan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install terrascan
+        run: curl -L https://github.com/tenable/terrascan/releases/latest/download/terrascan_Linux_x86_64.tar.gz | tar -xz && sudo mv terrascan /usr/local/bin/
+      - name: Run terrascan
+        run: terrascan scan -t aws -d .
 
-    # Policy as Code
-    - name: Run Checkov
-      uses: bridgecrewio/checkov-action@master
-      with:
-        directory: .
+    # - name: Run tfsec
+    #     uses: aquasecurity/tfsec-action@v1.0.0
+    #     with:
+    #      args: .
     
-    - name: Setup Infracost
-      uses: infracost/actions/setup@v2
-      with:
-        api-key: ${{ secrets.INFRACOST_API_KEY }}
+    # # Policy as Code
+    # - name: Run Checkov
+    #   uses: bridgecrewio/checkov-action@master
+    #   with:
+    #     directory: .
+    
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-    - name: Run Infracost
-      run: infracost breakdown --path .
+      - name: Run Infracost
+        run: infracost breakdown --path .
 
 
     # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan -input=false
+      - name: Terraform Plan
+        run: terraform plan -input=false
 
       # On push to "main", build or change infrastructure according to Terraform configuration files
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
