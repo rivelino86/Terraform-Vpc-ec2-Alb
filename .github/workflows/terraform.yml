@@ -53,25 +53,21 @@ jobs:
       run: terraform validate
 
   terrascan:
+    name: 'Terrascan Security Scan'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install terrascan
-        run: curl -L https://github.com/tenable/terrascan/releases/latest/download/terrascan_Linux_x86_64.tar.gz | tar -xz && sudo mv terrascan /usr/local/bin/
-      - name: Run terrascan
-        run: terrascan scan -t aws -d .
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # - name: Run tfsec
-    #     uses: aquasecurity/tfsec-action@v1.0.0
-    #     with:
-    #      args: .
-    
-    # # Policy as Code
-    # - name: Run Checkov
-    #   uses: bridgecrewio/checkov-action@master
-    #   with:
-    #     directory: .
-    
+      - name: Run Terrascan
+        id: terrascan
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: 'terraform'
+          iac_version: 'v14'
+          policy_type: 'aws'
+          only_warn: true
+
       - name: Setup Infracost
         uses: infracost/actions/setup@v2
         with:
