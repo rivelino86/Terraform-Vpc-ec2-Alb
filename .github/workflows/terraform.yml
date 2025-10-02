@@ -61,7 +61,7 @@ jobs:
       run: infracost breakdown --path .
 
 
-    # Generates an execution plan for Terraform
+    # Generates an execution plan
     - name: Terraform Plan
       run: terraform plan -input=false
 
