@@ -16,26 +16,17 @@ permissions:
   contents: read
 
 jobs:
-
-  scanning:
-    name: 'Scan Terraform Code'
+  checkov-job:
     runs-on: ubuntu-latest
+    name: checkov-action
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@master
 
-      # Run tfsec for security scanning
-      - name: Run tfsec
-        uses: aquasecurity/tfsec-action@v1.0.0
-        with:
-          args: .
-
-      # Run Checkov for policy as code scanning
-      - name: Run Checkov
+      - name: Run Checkov action
+        id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
-          skip_check: ""
-          soft_fail: true
           directory: .
 
   terraform:
