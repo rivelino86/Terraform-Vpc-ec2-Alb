@@ -1,11 +1,12 @@
 
 
-name: 'Terraform'
+name: 'Terraform project'
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -16,17 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    # Use the Bash shell 
     defaults:
       run:
         shell: bash
 
     steps:
-    # Checkout the repository to the GitHub Actions runner
+    # Checkout the repository 
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    # Install the latest version of Terraform 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
       with:
@@ -39,13 +40,11 @@ jobs:
        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
        aws-region: us-east-1
 
-    
-
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
 
-    # Checks that all Terraform configuration files adhere to a canonical format
+    # Checks that all Terraform configuration 
     - name: Terraform Format
       run: terraform fmt -check
        
@@ -95,4 +94,15 @@ jobs:
           policy_type: 'aws'
           only_warn: true
 
+      - name: Wait before destroy
+        if: ${{ github.event.inputs.destroy == 'yes' }}
+        run: sleep 500
+
+      - name: Terraform Destroy (Conditional)
+        if: ${{ github.event.inputs.destroy == 'yes' }}
+        run: terraform destroy -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
       
