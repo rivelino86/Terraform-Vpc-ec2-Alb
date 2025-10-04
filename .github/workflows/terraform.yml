@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:  # allows manual trigger for destroy
-    inputs:
+   inputs:
       destroy:
         description: 'Set to yes to destroy infra after apply'
         required: false
