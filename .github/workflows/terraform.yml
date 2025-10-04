@@ -5,8 +5,8 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:  # allows manual trigger for destroy
-   inputs:
+  workflow_dispatch:
+    inputs:
       destroy:
         description: 'Set to yes to destroy infra after apply'
         required: false
@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+
 
 jobs:
   checkov-job:
