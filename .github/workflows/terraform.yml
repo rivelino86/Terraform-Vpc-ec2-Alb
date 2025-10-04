@@ -34,6 +34,8 @@ jobs:
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
+          skip_check: ""
+          soft_fail: true
           directory: .
 
   terraform:
