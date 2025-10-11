@@ -84,16 +84,16 @@ resource "aws_security_group" "sg2" {
 
   # Ingress - only HTTP from the internet if needed
   ingress {
-    description = "Allow HTTP from public"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    security_groups = [ aws_security_group.sg1.id ]    //cidr_blocks = ["0.0.0.0/0"] # Required for public-facing LB
+    description     = "Allow HTTP from public"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg1.id] //cidr_blocks = ["0.0.0.0/0"] # Required for public-facing LB
   }
 
   # Optional: restrict SSH to admin IPs
   ingress {
-    description = "Allow SSH from admin IPs"
+    description = "Allow SSH from"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"

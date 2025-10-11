@@ -80,11 +80,11 @@ resource "aws_lb_target_group" "alb-target-group" {
   vpc_id   = aws_vpc.vpc1.id
 
   health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
-    matcher             = "200"
-    path                = "/"
+    enabled           = true
+    healthy_threshold = 2
+    interval          = 30
+    matcher           = "200"
+    path              = "/"
     //port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 5
@@ -107,7 +107,7 @@ resource "aws_lb_target_group_attachment" "attach-app2" {
 
 # Application Load Balancer
 resource "aws_lb" "application-lb" {
-  name               = "application-lb"
+  name = "application-lb"
   //internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg2.id]
