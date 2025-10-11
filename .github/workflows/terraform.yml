@@ -34,7 +34,6 @@ jobs:
         run: |
           tflint --init
           tflint --format compact
-          continue-on-error: true
         working-directory: . #${{ env.TF_WORKING_DIR }}
 
 
