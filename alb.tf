@@ -81,14 +81,14 @@ resource "aws_lb_target_group" "alb-target-group" {
 
   health_check {
     enabled             = true
-    healthy_threshold   = 3
-    interval            = 10
+    healthy_threshold   = 2
+    interval            = 30
     matcher             = "200"
     path                = "/"
-    port                = "traffic-port"
+    //port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 6
-    unhealthy_threshold = 3
+    timeout             = 5
+    unhealthy_threshold = 2
   }
 }
 
@@ -108,7 +108,7 @@ resource "aws_lb_target_group_attachment" "attach-app2" {
 # Application Load Balancer
 resource "aws_lb" "application-lb" {
   name               = "application-lb"
-  internal           = false
+  //internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg2.id]
   subnets            = [aws_subnet.public1.id, aws_subnet.public2.id]
