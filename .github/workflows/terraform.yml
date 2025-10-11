@@ -63,6 +63,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.50.3
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --format compact
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
       # Initialize a new or existing Terraform working directory
       - name: Terraform Init
         run: terraform init
