@@ -46,7 +46,7 @@ jobs:
 
      
   Deployment:
-    name: 'Terraform'
+    name: 'deployment'
     runs-on: ubuntu-latest
     environment: production
     needs: security-scan  # Wait for security scan to complete
@@ -85,8 +85,23 @@ jobs:
        
       - name: Terraform Validate
         run: terraform validate
+
+       # Generates an execution plan
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -input=false -no-color
+        continue-on-error: true
+
+      # Apply on main branch push
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.inputs.destroy != 'yes'
+        run: terraform apply -auto-approve -input=false
+        env:
+          TF_LOG: DEBUG
+      
+
   cost-view:
-    name: Cost view
+    name: 'Cost calculation'
     runs-on: ubuntu-latest
 
     steps:
@@ -101,19 +116,7 @@ jobs:
       - name: Run Infracost
         run: infracost breakdown --path .
 
-      # Generates an execution plan
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -input=false -no-color
-        continue-on-error: true
-
-      # Apply on main branch push
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.inputs.destroy != 'yes'
-        run: terraform apply -auto-approve -input=false
-        env:
-          TF_LOG: DEBUG
-
+     
       - name: Wait for 3 minutes before cleanup
         if: ${{ github.ref == 'refs/heads/main' }}
         run: sleep 200
