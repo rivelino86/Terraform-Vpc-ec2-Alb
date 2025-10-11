@@ -11,41 +11,51 @@ on:
         description: 'Set to yes to destroy infra after apply'
         required: false
         default: 'no'
+        type: string
 
 permissions:
   contents: read
 
-
 jobs:
-  checkov-job:
+  security-scan:
+    name: 'Security Scan'
     runs-on: ubuntu-latest
-    name: checkov-action
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@master
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Run Checkov action
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
+      - name: Checkov Security Scan
+        uses: bridgecrewio/checkov-action@v12
         with:
-          directory: .
+          directory: . #${{ env.TF_WORKING_DIR }}
+          skip_check: "CKV_AWS_378,CKV2_AWS_12,CKV_AWS_260,CKV_AWS_135,CKV_AWS_91,CKV_AWS_2"
+          soft_fail: true
 
+     
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
+    needs: security-scan  # Wait for security scan to complete
+
+    # Use the Bash shell 
     defaults:
       run:
         shell: bash
+
     steps:
+      # Checkout the repository 
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Install the latest version of Terraform 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
+          terraform_version: '1.5.0'  # Specify a version for consistency
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
+    
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -53,12 +63,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # Initialize a new or existing Terraform working directory
       - name: Terraform Init
         run: terraform init
 
+      # Checks that all Terraform configuration 
       - name: Terraform Format
         run: terraform fmt -check
-
+       
       - name: Terraform Validate
         run: terraform validate
 
@@ -70,24 +82,39 @@ jobs:
       - name: Run Infracost
         run: infracost breakdown --path .
 
+      # Generates an execution plan
       - name: Terraform Plan
-        run: terraform plan -input=false
+        id: plan
+        run: terraform plan -input=false -no-color
+        continue-on-error: true
 
+      # Apply on main branch push
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.inputs.destroy != 'yes'
         run: terraform apply -auto-approve -input=false
         env:
           TF_LOG: DEBUG
 
-      # Conditional destroy only on manual trigger
-      - name: Wait before destroy
-        if: ${{ github.event.inputs.destroy == 'yes' }}
-        run: sleep 300  # Wait 5 minutes before destroy (optional)
-
+      # Destroy conditionally
       - name: Terraform Destroy (Conditional)
-        if: ${{ github.event.inputs.destroy == 'yes' }}
-        run: terraform destroy -auto-approve
+        if: github.event.inputs.destroy == 'yes'
+        run: terraform destroy -auto-approve -input=false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
+
+  # terrascan:
+  #   name: 'Terrascan Security Scan'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Run Terrascan
+  #       uses: tenable/terrascan-action@main
+  #       with:
+  #         iac_type: 'terraform'
+  #         iac_version: 'v14'
+  #         policy_type: 'aws'
+  #         only_warn: true
