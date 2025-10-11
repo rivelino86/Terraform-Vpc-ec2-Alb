@@ -45,7 +45,7 @@ jobs:
           soft_fail: true
 
      
-  terraform:
+  Deployment:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
@@ -85,6 +85,13 @@ jobs:
        
       - name: Terraform Validate
         run: terraform validate
+  cost-view:
+    name: Cost view
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Infracost
         uses: infracost/actions/setup@v2
@@ -107,9 +114,9 @@ jobs:
         env:
           TF_LOG: DEBUG
 
-      - name: Wait for 10 minutes before cleanup
+      - name: Wait for 3 minutes before cleanup
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: sleep 600
+        run: sleep 200
 
       - name: Terraform Destroy
         if: ${{ github.ref == 'refs/heads/main' }}
